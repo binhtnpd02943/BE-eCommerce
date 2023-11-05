@@ -23,9 +23,13 @@ const keyStoreSchema = new Schema(
       required: true,
       trim: true,
     },
-    refreshToken: {
+    refreshTokensUsed: { // Những RT đã được sử dụng
       type: Array,
       default: [],
+    },
+    refreshToken: {
+      type: String,
+      required: true,
     },
   },
   {
