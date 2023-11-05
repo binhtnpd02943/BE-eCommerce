@@ -1,0 +1,13 @@
+@url_dev=http://localhost:3056/v1/api/
+
+### sigUp
+POST {{url_dev}}/shop/sigUp
+Content-Type: application/json
+x-api-key: 6d7067c86b3f7dd47f6b2d354e1c336b31f9d4f4b288677f0251fed8ea87f4e5e1ac1f042785073d4a5275108dde637d9bd335c89a0749b1cb4da11a6b953bc2
+
+{
+    "name": "Shop TIPS",
+    "email": "binhtn1@gmail.com",
+    "mobile": "0336378091",
+    "password": "test123"
+}
