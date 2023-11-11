@@ -13,7 +13,11 @@ const {
   publishProductByShop,
   unPublishProductByShop,
   searchProductByUser,
+  findAllProducts,
+  findProduct,
+  updateProductById,
 } = require('../models/repositories/product.repository');
+const { removeUndefinedObject, updateNestedObjectParser } = require('../utils');
 
 // define Factory class to create product
 class ProductFactory {
@@ -31,6 +35,14 @@ class ProductFactory {
     return new productClass(payload).createProduct();
   }
 
+  static async updateProduct(type, productId, payload) {
+    const productClass = ProductFactory.productRegistry[type];
+    if (!productClass)
+      throw new BadRequestError(`Invalid Product types ${type}`);
+
+    return new productClass(payload).updateProduct({ productId });
+  }
+
   // QUERY
   static async findAllDraftForShop({ product_shop, limit = 50, skip = 0 }) {
     const query = { product_shop, isDraft: true };
@@ -45,6 +57,26 @@ class ProductFactory {
   static async searchProducts({ keySearch }) {
     return await searchProductByUser({ keySearch });
   }
+
+  static async findAllProducts({
+    limit = 50,
+    sort = 'ctime',
+    page = 1,
+    filter = { isPublished: true },
+  }) {
+    return await findAllProducts({
+      limit,
+      sort,
+      page,
+      filter,
+      select: ['product_name', 'product_price', 'product_thumb'],
+    });
+  }
+
+  static async findProduct({ product_id }) {
+    return await findProduct({ product_id, unSelect: ['__v'] });
+  }
+
   // END QUERY
 
   //  PUT
@@ -86,6 +118,11 @@ class Product {
   async createProduct(product_id) {
     return await product.create({ ...this, _id: product_id });
   }
+
+  // Update new product
+  async updateProduct(productId, bodyUpdate) {
+    return await updateProductById({ productId, bodyUpdate, model: product });
+  }
 }
 
 // Define sub-class for different product types Clothing
@@ -101,6 +138,25 @@ class Clothing extends Product {
     if (!newProduct) throw new BadRequestError('create new Product error');
 
     return newProduct;
+  }
+
+  async updateProduct({ productId }) {
+    // 1. remove attr has null undefined
+    const objectParams = removeUndefinedObject(this);
+    // 2. check xem update o cho nao?
+    if (objectParams.product_attributes) {
+      // update child
+      await updateProductById({
+        productId,
+        bodyUpdate: updateNestedObjectParser(objectParams.product_attributes),
+        model: clothing,
+      });
+    }
+    const update = await super.updateProduct(
+      productId,
+      updateNestedObjectParser(objectParams)
+    );
+    return update;
   }
 }
 
@@ -119,6 +175,25 @@ class Electronics extends Product {
 
     return newProduct;
   }
+
+  async updateProduct({ productId }) {
+    // 1. remove attr has null undefined
+    const objectParams = removeUndefinedObject(this);
+    // 2. check xem update o cho nao?
+    if (objectParams.product_attributes) {
+      // update child
+      await updateProductById({
+        productId,
+        bodyUpdate: updateNestedObjectParser(objectParams.product_attributes),
+        model: electronic,
+      });
+    }
+    const update = await super.updateProduct(
+      productId,
+      updateNestedObjectParser(objectParams)
+    );
+    return update;
+  }
 }
 
 // Define sub-class for different product types Furniture
@@ -134,6 +209,25 @@ class Furniture extends Product {
     if (!newProduct) throw new BadRequestError('create new Product error');
 
     return newProduct;
+  }
+
+  async updateProduct({ productId }) {
+    // 1. remove attr has null undefined
+    const objectParams = removeUndefinedObject(this);
+    // 2. check xem update o cho nao?
+    if (objectParams.product_attributes) {
+      // update child
+      await updateProductById({
+        productId,
+        bodyUpdate: updateNestedObjectParser(objectParams.product_attributes),
+        model: furniture,
+      });
+    }
+    const update = await super.updateProduct(
+      productId,
+      updateNestedObjectParser(objectParams)
+    );
+    return update;
   }
 }
 
