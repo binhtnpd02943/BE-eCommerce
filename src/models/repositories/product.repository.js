@@ -86,6 +86,10 @@ const updateProductById = async ({
   });
 };
 
+const getProductById = async (productId) => {
+  return await product.findOne({ _id: productId }).lean();
+};
+
 const queryProduct = async ({ query, limit, skip }) => {
   return await product
     .find(query)
@@ -105,5 +109,6 @@ module.exports = {
   searchProductByUser,
   findAllProducts,
   findProduct,
-  updateProductById
+  updateProductById,
+  getProductById
 };
