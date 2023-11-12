@@ -8,6 +8,9 @@ const {
   furniture,
 } = require('../models/product.model');
 const {
+  insertInventory,
+} = require('../models/repositories/inventory.repository');
+const {
   findAllDraftForShop,
   findAllPublishForShop,
   publishProductByShop,
@@ -40,7 +43,7 @@ class ProductFactory {
     if (!productClass)
       throw new BadRequestError(`Invalid Product types ${type}`);
 
-    return new productClass(payload).updateProduct({ productId });
+    return new productClass(payload).updateProduct(productId);
   }
 
   // QUERY
@@ -116,7 +119,18 @@ class Product {
 
   // Create new product
   async createProduct(product_id) {
-    return await product.create({ ...this, _id: product_id });
+    const newProduct = await product.create({ ...this, _id: product_id });
+
+    if (newProduct) {
+      // add product_stock in inventory collection
+      await insertInventory({
+        productId: newProduct._id,
+        shopId: this.product_shop,
+        stock: this.product_quantity,
+      });
+    }
+
+    return newProduct;
   }
 
   // Update new product
@@ -140,7 +154,7 @@ class Clothing extends Product {
     return newProduct;
   }
 
-  async updateProduct({ productId }) {
+  async updateProduct(productId) {
     // 1. remove attr has null undefined
     const objectParams = removeUndefinedObject(this);
     // 2. check xem update o cho nao?
@@ -176,7 +190,7 @@ class Electronics extends Product {
     return newProduct;
   }
 
-  async updateProduct({ productId }) {
+  async updateProduct(productId) {
     // 1. remove attr has null undefined
     const objectParams = removeUndefinedObject(this);
     // 2. check xem update o cho nao?
@@ -211,7 +225,7 @@ class Furniture extends Product {
     return newProduct;
   }
 
-  async updateProduct({ productId }) {
+  async updateProduct(productId) {
     // 1. remove attr has null undefined
     const objectParams = removeUndefinedObject(this);
     // 2. check xem update o cho nao?
