@@ -1,12 +1,14 @@
 'use strict';
 
 const { NotFoundError, BadRequestError } = require('../core/error.response');
+const { order } = require('../models/order.model');
 const { findCartById } = require('../models/repositories/cart.repositoty');
 const {
   checkDataProductServer,
   checkProductByServer,
 } = require('../models/repositories/product.repository');
 const DiscountService = require('./discount.service');
+const { acquireLock, releaseLock } = require('./redis.service');
 
 class CheckoutService {
   /* 
@@ -70,11 +72,11 @@ class CheckoutService {
 
       //   tong tiền đơn hàng
       const checkoutPrice = checkProductServer.reduce((acc, product) => {
-        return acc + (product.quantity * product.price);
+        return acc + product.quantity * product.price;
       }, 0);
 
       //   tổng tiền trước khi xử lý
-      checkout_order.totalPrice =+ checkoutPrice;
+      checkout_order.totalPrice = +checkoutPrice;
 
       const itemCheckout = {
         shopId,
@@ -116,6 +118,70 @@ class CheckoutService {
       checkout_order,
     };
   }
+
+  //   order
+  static async orderByUser({
+    shop_order_ids,
+    cartId,
+    userId,
+    user_address = {},
+    user_payment = {},
+  }) {
+    const { shop_order_ids_new, checkout_order } =
+      await CheckoutService.checkoutReview({
+        cartId,
+        userId,
+        shop_order_ids,
+      });
+
+    //   check lai mot lan nua xem vuot ton kho hay khong?
+    // get new array products
+    const products = shop_order_ids_new.flatMap((oder) => oder.item_products);
+    const acquireProduct = [];
+    for (let i = 0; i < products.length; i++) {
+      const { productId, quantity } = products[i];
+      const keyLock = await acquireLock(productId, quantity, cartId);
+      acquireProduct.push(keyLock ? true : false);
+
+      if (keyLock) {
+        await releaseLock(keyLock);
+      }
+    }
+
+    // check nếu 1 sản hết hàng trong kho
+    if (acquireProduct.includes(false)) {
+      throw new BadRequestError(
+        'Mot so san pham da duoc cap nhap, vui logn quay lai gio hang,...'
+      );
+    }
+    const newOrder = await order.create({
+      order_userId: userId,
+      order_checkout: checkout_order,
+      order_shipping: user_address,
+      order_payment: user_payment,
+      order_products: shop_order_ids_new,
+    });
+
+    // trường hơp: nếu insert thành cồng, thi remove product có trong cart
+
+    if (newOrder) {
+      // remove product in my cart
+    }
+
+    return newOrder;
+  }
+
+  // Query Orders [Users]
+  static async getOrdersByUser() {}
+
+  // Query Orders Using Id [Users]
+  static async getOneOrderByUser() {}
+
+  // Cancel Orders [Users]
+  static async cancelOrderByUser() {}
+
+  // Update  Order Status  [Shop | Admin]
+  static async updateOrderStatusByShop() {}
 }
 
 module.exports = CheckoutService;
