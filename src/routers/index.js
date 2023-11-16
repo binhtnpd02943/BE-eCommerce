@@ -19,6 +19,8 @@ router.use('/v1/api/cart', require('./cart'));
 router.use('/v1/api/checkout', require('./checkout'));
 // inventory
 router.use('/v1/api/inventory', require('./inventory'));
+// inventory
+router.use('/v1/api/comment', require('./comment'));
 // check permission
 router.use('/v1/api', require('./access'));
 
