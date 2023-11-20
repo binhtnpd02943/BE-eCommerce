@@ -17,16 +17,13 @@ async function consumerOrderMessage() {
     });
 
     // Set prefetch to 1 to ensure one ack at a time
-    // channel.prefetch(1);
+    channel.prefetch(1);
 
     channel.consume(queueName, (msg) => {
       const message = msg.content.toString();
 
       setTimeout(() => {
         console.log('processed', message);
-        // if (msg === 3) {
-        //   return;
-        // }
         channel.ack(msg);
       }, Math.random() * 1000);
     });
