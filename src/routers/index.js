@@ -21,6 +21,8 @@ router.use('/v1/api/checkout', require('./checkout'));
 router.use('/v1/api/inventory', require('./inventory'));
 // inventory
 router.use('/v1/api/comment', require('./comment'));
+// inventory
+router.use('/v1/api/notification', require('./notification'));
 // check permission
 router.use('/v1/api', require('./access'));
 

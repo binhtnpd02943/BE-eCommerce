@@ -42,10 +42,6 @@ class DiscountService {
       users_used,
     } = payload;
     // check
-    if (new Date() < new Date(start_date) || new Date() > new Date(end_date)) {
-      throw new BadRequestError('Discount code has expired!');
-    }
-
     if (new Date(start_date) >= new Date(end_date)) {
       throw new BadRequestError('Start date must be before end_date');
     }
@@ -183,13 +179,6 @@ class DiscountService {
     if (!discount_max_uses) throw new NotFoundError(`Discount are out!`);
 
     // check
-    // if (
-    //   new Date() < new Date(discount_start_date) ||
-    //   new Date() > new Date(discount_end_date)
-    // ) {
-    //   throw new BadRequestError('Discount code has expired!');
-    // }
-
     if (new Date(discount_start_date) >= new Date(discount_end_date)) {
       throw new BadRequestError('Start date must be before end_date');
     }

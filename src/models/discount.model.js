@@ -15,10 +15,12 @@ const discountSchema = new Schema(
       type: String,
       require: true,
     },
+    // fixed_amount & percentage
     discount_type: {
       type: String,
       default: 'fixed_amount',
     },
+    // percentage thì value là % giảm / còn fixed_amount là tiền giảm
     discount_value: {
       type: Number,
       require: true,
@@ -38,7 +40,7 @@ const discountSchema = new Schema(
       type: Date,
       require: true,
     },
-    // so luong discount duoc ap dung
+    // số lượng discount được áp dụng
     discount_max_uses: {
       type: Number,
       require: true,
@@ -52,11 +54,12 @@ const discountSchema = new Schema(
       type: Number,
       require: true,
     },
-    // số lượng cho phép tối đã mỗi user
+    // số lượng cho phép tối đa mỗi user
     discount_max_uses_per_user: {
       type: Number,
       require: true,
     },
+    // đơn giá tối thiểu được áp dụng voucher
     discount_min_oder_value: {
       type: Number,
       require: true,
