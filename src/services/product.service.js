@@ -21,6 +21,7 @@ const {
   updateProductById,
 } = require('../models/repositories/product.repository');
 const { removeUndefinedObject, updateNestedObjectParser } = require('../utils');
+const { pushNotiToSystem } = require('./notification.service');
 
 // define Factory class to create product
 class ProductFactory {
@@ -134,6 +135,18 @@ class Product {
         stock: this.product_quantity,
       });
     }
+    // push notification to system collections
+    pushNotiToSystem({
+      type: 'SHOP-001',
+      receivedId: 1,
+      senderId: this.product_shop,
+      options: {
+        product_name: this.product_name,
+        shop_name: this.product_shop,
+      },
+    })
+      .then((res) => console.log(res))
+      .catch(console.error);
 
     return newProduct;
   }
