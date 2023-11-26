@@ -1,23 +1,22 @@
 'use strict';
-const redis = require('redis');
 const { promisify } = require('util');
 const {
   reservationInventory,
 } = require('../models/repositories/inventory.repository');
 
-const redisClient = redis.createClient();
+const redisClient = require('../databases/init.redis');
 
-const pexpire = promisify(redisClient.pExpire).bind(redisClient);
-const setnxAsync = promisify(redisClient.setEx).bind(redisClient);
+const pExpire = promisify(redisClient.pexpire).bind(redisClient);
+const setNxAsync = promisify(redisClient.setnx).bind(redisClient);
 
 const acquireLock = async (productId, quantity, cartId) => {
   const key = `lock_v2023_${productId}`;
   const retryTimes = 10;
   const expireTime = 3000; // 3 seconds tạm lock
 
-  for (let i = 0; i < retryTimes.length; i++) {
+  for (let i = 0; i < retryTimes; i++) {
     // tao mot key, thang nao năm giữ được vào thanh toán
-    const result = await setnxAsync(key, expireTime);
+    const result = await setNxAsync(key, expireTime);
     console.log(`result:::`, result);
     if (result === 1) {
       // thao tac voi inventory
@@ -26,8 +25,9 @@ const acquireLock = async (productId, quantity, cartId) => {
         quantity,
         cartId,
       });
+
       if (isReversion.modifiedCount) {
-        await pexpire(key, expireTime);
+        await pExpire(key, expireTime);
         return key;
       }
 
