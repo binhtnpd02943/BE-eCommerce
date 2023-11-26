@@ -4,9 +4,9 @@ const { NotFoundError, BadRequestError } = require('../core/error.response');
 const { order } = require('../models/order.model');
 const { findCartById } = require('../models/repositories/cart.repositoty');
 const {
-  checkDataProductServer,
   checkProductByServer,
 } = require('../models/repositories/product.repository');
+const CartService = require('./cart.service');
 const DiscountService = require('./discount.service');
 const { acquireLock, releaseLock } = require('./redis.service');
 
@@ -119,7 +119,7 @@ class CheckoutService {
     };
   }
 
-  //   order
+  // order
   static async orderByUser({
     shop_order_ids,
     cartId,
@@ -134,7 +134,7 @@ class CheckoutService {
         shop_order_ids,
       });
 
-    //   check lai mot lan nua xem vuot ton kho hay khong?
+    // check lai mot lan nua xem vuot ton kho hay khong?
     // get new array products
     const products = shop_order_ids_new.flatMap((oder) => oder.item_products);
     const acquireProduct = [];
@@ -166,6 +166,10 @@ class CheckoutService {
 
     if (newOrder) {
       // remove product in my cart
+      // return await CartService.deleteUserCart({
+      //   userId,
+      //   productId,
+      // });
     }
 
     return newOrder;

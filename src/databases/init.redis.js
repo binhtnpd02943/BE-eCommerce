@@ -1,0 +1,21 @@
+const { createClient } = require('redis');
+const client = createClient({
+  url: process.env.REDIS_URL,
+});
+client.ping(function (err, result) {
+  if (err) {
+    console.error('Error pinging Redis:', err);
+  } else {
+    console.log('Redis ping result:', result);
+  }
+});
+
+client.on('connect', () => {
+  console.log('Redis client connected');
+});
+
+client.on('error', (error) => {
+  console.error(error);
+});
+
+module.exports = client;

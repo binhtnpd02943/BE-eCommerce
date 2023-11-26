@@ -23,6 +23,8 @@ router.use('/v1/api/inventory', require('./inventory'));
 router.use('/v1/api/comment', require('./comment'));
 // inventory
 router.use('/v1/api/notification', require('./notification'));
+// upload
+router.use('/v1/api/upload', require('./upload'));
 // check permission
 router.use('/v1/api', require('./access'));
 
